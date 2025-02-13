@@ -1,33 +1,47 @@
 ﻿using Assignment.API.Data;
+using Assignment.API.DTOs;
 using Assignment.API.Models;
+using Assignment.API.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace Assignment.API.Repositories
 {
     public interface ITransactionRepository : IRepository<Transaction>
     {
-        Task<IEnumerable<Transaction>> GetByCurrencyAsync(string currency);
-        Task<IEnumerable<Transaction>> GetByDateRangeAsync(DateTime start, DateTime end);
-        Task<IEnumerable<Transaction>> GetByStatusAsync(string status);
+        Task<IEnumerable<TransactionDTO>> GetByCurrencyAsync(string currency);
+        Task<IEnumerable<TransactionDTO>> GetByDateRangeAsync(DateTime start, DateTime end);
+        Task<IEnumerable<TransactionDTO>> GetByStatusAsync(string status);
     }
 
     public class TransactionRepository : Repository<Transaction>, ITransactionRepository
     {
         public TransactionRepository(TransactionContext context) : base(context) { }
 
-        public async Task<IEnumerable<Transaction>> GetByCurrencyAsync(string currency)
+        public async Task<IEnumerable<TransactionDTO>> GetByCurrencyAsync(string currency)
         {
-            return await _context.Transactions.Where(t => t.CurrencyCode == currency).ToListAsync();
+            var query =
+                from transaction in _context.Transactions
+                where transaction.CurrencyCode == currency
+                select new TransactionDTO { Id = transaction.Id, Payment = string.Concat(transaction.Amount.ToString("0.00"), " ", transaction.CurrencyCode), Status = ConvertUtils.StatusMapping(transaction.Status) };
+            return await query.ToListAsync();
         }
 
-        public async Task<IEnumerable<Transaction>> GetByDateRangeAsync(DateTime start, DateTime end)
+        public async Task<IEnumerable<TransactionDTO>> GetByDateRangeAsync(DateTime start, DateTime end)
         {
-            return await _context.Transactions.Where(t => t.TransactionDate >= DateTime.SpecifyKind(start, DateTimeKind.Utc) && t.TransactionDate <= DateTime.SpecifyKind(end, DateTimeKind.Utc)).ToListAsync();
+            var query =
+                from t in _context.Transactions
+                where t.TransactionDate >= DateTime.SpecifyKind(start, DateTimeKind.Utc) && t.TransactionDate <= DateTime.SpecifyKind(end, DateTimeKind.Utc)
+                select new TransactionDTO { Id = t.Id, Payment = string.Concat(t.Amount.ToString("0.00"), " ", t.CurrencyCode), Status = ConvertUtils.StatusMapping(t.Status) };
+            return await query.ToListAsync();
         }
 
-        public async Task<IEnumerable<Transaction>> GetByStatusAsync(string status)
+        public async Task<IEnumerable<TransactionDTO>> GetByStatusAsync(string status)
         {
-            return await _context.Transactions.Where(t => t.Status == status).ToListAsync();
+            var query =
+                from transaction in _context.Transactions
+                where transaction.Status == status
+                select new TransactionDTO { Id = transaction.Id, Payment = string.Concat(transaction.Amount.ToString("0.00"), " ", transaction.CurrencyCode), Status = ConvertUtils.StatusMapping(transaction.Status) };
+            return await query.ToListAsync();
         }
     }
 }
