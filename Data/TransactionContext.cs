@@ -13,11 +13,12 @@ namespace Assignment.API.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure the Transaction entity
             modelBuilder.Entity<Transaction>(entity =>
             {
                 entity.HasKey(t => t.Id);
             });
+
+            
         }
     }
 }
