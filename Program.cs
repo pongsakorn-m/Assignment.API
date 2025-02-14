@@ -18,6 +18,7 @@ builder.Services.AddDbContext<TransactionContext>(options =>
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
+builder.Services.AddScoped<IConvertService, ConvertService>();
 
 var app = builder.Build();
 

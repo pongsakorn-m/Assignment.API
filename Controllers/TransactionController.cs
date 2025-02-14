@@ -17,15 +17,16 @@ namespace Assignment.API.Controllers
         [HttpPost("Upload")]
         public async Task<IActionResult> UploadFile(IFormFile file)
         {
-            if (file == null || file.Length == 0)
-                return BadRequest("No file uploaded.");
-
             try
             {
                 await _transactionService.UploadFileAsync(file);
                 return Ok();
             }
-            catch (ArgumentException ex)
+            catch (FormatException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ArgumentNullException ex)
             {
                 return BadRequest(ex.Message);
             }
